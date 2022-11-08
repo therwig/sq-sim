@@ -62,3 +62,5 @@ After this splitting step, the pairs of mu+ and mu- in each bin can be used to p
 make split2
 ./run_split2
 ```
+
+This results in a large set of muon pairs, with masses, for further analyis.

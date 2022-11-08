@@ -1,3 +1,5 @@
+# this information should all be included in the main README.md for the current folder now.
+
 #python3 step1_csv_to_tree.py
 
 # g++ -o run_step2 step2_initial_to_final.cpp `root-config --glibs` `root-config --cflags`
