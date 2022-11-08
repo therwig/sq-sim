@@ -30,14 +30,14 @@ constexpr bool DO_RANDOM_INPUTS=1;
 // constexpr int DUMMY_NEVENT = 200 * 1e6; // noskim 5.5min
 // constexpr int DUMMY_NEVENT = 2000 * 1e6; // mu- skim(x>0). 7min
 // constexpr int DUMMY_NEVENT = 2000 * 1e6; // mu+ skim(0<x<50, pz>0.5). 10.m
-constexpr int DUMMY_NEVENT = 500 * 1e6; // mu+ skim(0<x<50, pz>0.5). 10.m
+constexpr int DUMMY_NEVENT = 1e6; //500 * 1e6; // mu+ skim(0<x<50, pz>0.5). 10.m
 // constexpr long DUMMY_NEVENT = 10000 * 1e6; // mu- skim. ~27.5 min
 //constexpr long DUMMY_NEVENT = 1000 * 1e6; // mu- skim. ~27.5 min
 constexpr int NTRIALS_PER_EVENT=1;
 
 void step2_initial_to_final(int randseed=2022){
   // Inputs
-  TFile* ifi = new TFile("initial_muons.root","read");
+  TFile* ifi = new TFile("data/initial_muons.root","read");
   TTree* it = (TTree*) ifi->Get("Events");
   float ipx, ipy, ipz;
   int ipdg;
@@ -47,7 +47,7 @@ void step2_initial_to_final(int randseed=2022){
   it->SetBranchAddress("pdg",&ipdg);
   
   // Outputs
-  TFile* f = new TFile(TString::Format("final_muons_%d.root",randseed),"recreate");
+  TFile* f = new TFile(TString::Format("data/final_muons_%d.root",randseed),"recreate");
   TTree* t = new TTree("Events","");
   float x, y, px, py, pz, dx, dxBeam, dxBfield;
   int pdg;

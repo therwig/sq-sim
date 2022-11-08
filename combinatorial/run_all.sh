@@ -1,4 +1,4 @@
-#OA python3 step1_csv_to_tree.py
+#python3 step1_csv_to_tree.py
 
 # g++ -o run_step2 step2_initial_to_final.cpp `root-config --glibs` `root-config --cflags`
 # ./run_step2 3 # random seed

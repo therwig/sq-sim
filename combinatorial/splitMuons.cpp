@@ -180,7 +180,7 @@ void make_pairs(unsigned int ibin, bool debug=false){
 int main(int argc, char *argv[]){
   // split();
   // make_pairs(20);
-  for(int i=6; i<10;i++){
+  for(int i=0; i<10;i++){
     cout << "Running bin " << i << endl;
     make_pairs(i, false);
   }

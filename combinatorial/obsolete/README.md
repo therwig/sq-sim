@@ -1,0 +1,1 @@
+This is an older version of the code based on template distributions, which was abandoned in favor of using the complete set of (multi-dimensional, fully-correlated) muon properties from real MC events.
