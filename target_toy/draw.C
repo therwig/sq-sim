@@ -1,0 +1,21 @@
+// some example commands to plot histograms in a TBrowser
+
+Events->Draw("m>>h1","z>0","")
+Events->Draw("m>>h2","z>20 && z<30","same")
+Events->Draw("m>>h0","z<10","same")
+Events->Draw("m>>h9","z>290","same")
+h1->SetLineColor(kBlack)
+h0->SetLineColor(kBlue)
+h9->SetLineColor(kRed)
+h2->SetLineColor(kGreen)
+h0->SetLineWidth(2)
+h1->SetLineWidth(2)
+h2->SetLineWidth(2)
+h9->SetLineWidth(2)
+
+h1->Draw()
+h2->Draw("same")
+h0->Draw("same")
+h9->Draw("same")
+h1->SetTitle("; mass [GeV]")
+gStyle->SetOptStat(0)
