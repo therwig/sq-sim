@@ -1,6 +1,8 @@
 from ROOT import *
+import os
 
-fout = TFile.Open('initial_muons.root','recreate')
+os.system('mkdir -p data')
+fout = TFile.Open('data/initial_muons.root','recreate')
 
 t = TTree("Events","")
 t.ReadFile("genmuons_protons.csv","px/F:py/F:pz/F:pdg/I",",")
