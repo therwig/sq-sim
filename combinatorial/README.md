@@ -45,22 +45,19 @@ make step4_threeMu
 ```
 
 And second we consider the minimal, two-muon analysis.
-To perform this efficiently, we split all final muons into bins according to their final position in the bending plane.
+
+```
+make step4_twoMu
+./run_step4_twoMu
+```
+
+To perform the low-mass scan more efficiently, we split all final muons into bins according to their final position in the bending plane.
 
 ```
 mkdir data/splitMuons
-make split1
-./run_split1
-```
-
-Unfortunately, this code was overwritten by step2 and must be reproduced (TODO).  In the mean time we can run over premade inputs.
-
-
-After this splitting step, the pairs of mu+ and mu- in each bin can be used to produce masses.
-
-```
-make split2
-./run_split2
+make split
+./run_split 0  # split the inputs (TODO add flag)
+./run_split 1  # make masses from the split inputs
 ```
 
 This results in a large set of muon pairs, with masses, for further analyis.

@@ -10,9 +10,10 @@ pdir='plots/paper/'
 
 h = HistHelper()
 
-make_pz_comp = True
-make_dx_comp = True
-make_mass = True
+make_pz_comp = 0
+make_dx_comp = 0
+make_mass = 0
+make_mass2 = 1
 
 def dumpToTxt(fname, h):
     f = open(fname+'.txt','w')
@@ -108,7 +109,7 @@ if make_mass:
     f = ROOT.TFile('data/pseudo120/final_events_xdiff3.root','read')
     t = f.Get('Events')
     
-    h.book('m',';minimum m_{#mu^{+}#mu^{-}} [GeV];Events',100,0,10)    
+    h.book('m',';minimum m_{#mu^{+}#mu^{-}} [GeV];Events',100,0,10)
     h0=h['m']
     h0.Sumw2()
     t.Draw("min(m1n,m2n)>>m","(xN>10 && xP1>10 && xP2>10)")
@@ -151,4 +152,81 @@ if make_mass:
     dumpToTxt(pdir+'/txt/min_mass', h0)
 
     f.Close()
+
+if make_mass2:
+    # mass is split between events in 2 files (above and below 3 GeV)
+    
+    fi1 = ROOT.TFile('data/pseudo120/pairs_noCut_reduceNmu1000x.root','read')
+    t1 = fi1.Get('Events')
+    fi2 = ROOT.TFile('data/pseudo120/pairs_m3_reduce100_1.root','read')
+    t2 = fi2.Get('Events')
+    
+    h.book('m',';m_{#mu^{+}#mu^{-}} [GeV];Events per GeV',80,0,10) # should use a power of 2 / GeV (compression)
+    h0=h['m']
+    h1=h['m'].Clone("h1")
+    h2=h['m'].Clone("h2")
+    t1.Draw("m>>h1")
+    t2.Draw("m>>h2")
+    b = h0.FindBin(3.00001)
+    nLo = h1.Integral(0,b-1)
+    h2.Scale(nLo / h2.Integral(0,b-1))
+    for i in range(0,b): h1.SetBinContent(i,0)
+    h0.Add(h1)
+    h0.Add(h2)
+
+    # Below 2 GeV, expect 1.7502376e-08 pairs per BX. Expect 0.8 20 GeV beam muons.
+    # Thus the pair per MoT is 1.7502376e-08/0.8
+    # we normalize to 5e13
+    h0.Scale(5e13 * (1.7502376e-08/0.8) / h2.Integral(0,h2.FindBin(1.99999)))
+    for i in range(0,h0.GetNbinsX()+2): h0.SetBinError(i, ROOT.sqrt(h0.GetBinContent(i)) )
+    print( h0.GetBinWidth(1) )
+    h0.Scale( 1. / h0.GetBinWidth(1) )
+    
+    # f1 = ROOT.TF1( "f1", "[0]*pow(x,[1])", 1.2, 2.5)
+    # f1 = ROOT.TF1( "f1", "[0]*pow(x,[1])", 0.7, 1.35)
+    f1 = ROOT.TF1( "f1", "[0]*pow(x,[1])", 0.7, 1.68)
+    f1.SetLineColor(ROOT.kBlue)
+    f1.SetLineStyle(2)
+    # f2 = ROOT.TF1( "f2", "[0]*pow(x,[1])", 1e-3, 1.35)
+    # f2 = ROOT.TF1( "f2", "[0]*pow(x,[1])", 0.8, 1.35)
+    f2 = ROOT.TF1( "f2", "[0]*pow(x,[1])", 1e-3, 1.65)
+    h0.Fit(f1,'R')
+    f2.SetParameter(0, f1.GetParameter(0))
+    f2.SetParameter(1, f1.GetParameter(1))
+    f2.SetLineColor(ROOT.kBlue)
+    f2.SetLineStyle(2)
+    
+    print( f1.Eval(1) )
+    print( f2.Eval(1) )
+    
+    c = ROOT.TCanvas()
+    c.SetLogy()
+
+    # leg = ROOT.TLegend(0.7,0.6,0.88,0.9)
+    leg = ROOT.TLegend(0.4,0.2,0.8,0.4)
+    leg.SetTextFont(42)
+    leg.SetNColumns(1)
+    leg.SetHeader("5 #times 10^{13} MoT Equivalent")
+
+    h0.SetLineWidth(2)
+    h0.SetLineColor(ROOT.kBlack)
+    h0.SetMarkerColor(ROOT.kBlack)
+    h0.Draw()
+    f1.Draw('same')
+    f2.Draw('same')
+    leg.AddEntry(h0,'Coincident #mu background','ple')
+    leg.AddEntry(f2,'Fit (power law)','l')
+    
+    leg.SetFillStyle(0) 
+    leg.SetFillColor(0)
+    leg.SetBorderSize(0)
+    leg.Draw()
+    
+    h0.Draw('axis same')
+    save(c, 'mass2', pdir=pdir, exts=['.pdf','.eps','.png'])
+
+    dumpToTxt(pdir+'/txt/mass', h0)
+
+    fi1.Close()
+    fi2.Close()
 

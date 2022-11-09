@@ -1,4 +1,5 @@
 TRandom* r = new TRandom3(2022);
+vector<int> colz {kBlack, kRed, kBlue, 8,6,7,40,41,42,43,44};
 
 void genMC(){
   TFile* f = new TFile("out.root","recreate");
@@ -19,7 +20,7 @@ void genMC(){
   t->Write();
   f->Close();
 }
-float FindMinSRB(TH1* h, float bscale=1.){
+std::pair<float, float> FindMinSRB(TH1* h, float bscale=1.){
   int iCent = h->GetNbinsX()/2+1;
   float best=0, v;
   int bestW=0;
@@ -41,34 +42,109 @@ float FindMinSRB(TH1* h, float bscale=1.){
     }
   }
 
-  cout << "  The best width is found to be " << bestW << " MeV" << endl;
+  cout << "  The best width is found to be " << bestW << "% " << endl;
   printf("  This (srb=%.3f) is %.3f times better than the +/- 50 MeV result (srb=%.3f)\n",best, best/nom, nom);
   /* cout << "  This is " << best/nom << " times better than +/- 5 MeV" << endl; */
-  return best;
+  return std::make_pair(best,bestW);
+}
+std::vector<float> GetAllSRB(TH1* h, float bscale=1.){
+  int iCent = h->GetNbinsX()/2+1;
+  float best=0, v;
+  int bestW=0;
+  float nom;
+  vector<float> srbs;
+  for(int iWid=0; iWid < h->GetNbinsX()/2; iWid++){
+    v = h->Integral(iCent-iWid,iCent+iWid);
+    v /= sqrt( (1+2*iWid)*bscale );
+    srbs.push_back(v);
+  }
+  return srbs;
 }
 void fitSimple(){
   TFile* f = new TFile("out.root","read");
   TTree* t = (TTree*) f->Get("Events");
   TH1F* h = new TH1F("h","",401,-1,3);
   /* std::vector<float> x0s{1,5,10,20,50,100,200,300}; */
-  std::vector<float> x0s{1,6,60,120,350};
+  /* std::vector<float> x0s{1,6,60,120,350}; */
+  std::vector<float> x0s{1,5,10,20,50,100};
   std::vector<float> sigs;
   std::vector<float> wids;
+  std::vector<TH1*> hs;
   TCanvas c("c","");
 
   float N = t->GetEntries();
   std::vector<float> srbs;
+  std::vector< std::vector<float> > srbVecs;
+  float hmax=0;
   for(auto x0 : x0s){
     cout << "Considering " << x0 << " x0:" << endl;
     t->Draw("ms>>h",Form("z<%f",x0));
-    h->Scale(568*1.753*3./1.428/N);
-    srbs.push_back( FindMinSRB(h, x0) );
+    h->Scale(568*1.753*3./1.428/N/1.519);
+    auto p = FindMinSRB(h, x0);
+    srbs.push_back( p.first );
+    wids.push_back( p.second );
+    srbVecs.push_back( GetAllSRB(h, x0) );
+    hs.push_back((TH1*) h->Clone(Form("h_%f",x0)));
+    if( h->GetMaximum() > hmax) hmax = h->GetMaximum();
   }
   TGraph* g = new TGraph( x0s.size(), &x0s[0], &srbs[0] );
   g->Draw("AC*");
   c.SaveAs("plots/srbs.pdf");
+  g = new TGraph( x0s.size(), &x0s[0], &wids[0] );
+  g->Draw("AC*");
+  c.SaveAs("plots/wids.pdf");
   
   
+  vector<TGraph*> gs;
+  vector<float> binsWids;
+  for(int iWid=0; iWid < h->GetNbinsX()/2; iWid++)
+    binsWids.push_back( h->GetBinWidth(1)*(1+2*iWid) * 100 / 2.);
+  TMultiGraph* mg = new TMultiGraph();
+  int NN=50;
+  for (auto srbVec : srbVecs){
+    srbVec.resize(NN);
+    binsWids.resize(NN);
+    gs.push_back( new TGraph( NN, &binsWids[0], &srbVec[0] ) );
+    /* gs.back().SetLineColor(colz[gs.size()-1]); */
+    mg->Add(gs.back());
+  }
+  mg->Draw("AC PLC");
+  mg->SetTitle(";m_{#mu+#mu-} window [%];S/#sqrt{B}");
+
+  g = new TGraph( wids.size(), &wids[0], &srbs[0] );
+  g->SetMarkerStyle(5);
+  g->SetMarkerColor(kBlack);
+  g->Draw("P same");
+  
+  c.SaveAs("plots/scanSrB.pdf");
+
+  auto leg = new TLegend(0.7,0.4,0.88,0.85);
+  leg->SetTextFont(42);
+  leg->SetNColumns(1);
+  leg->SetHeader("Target thickness");
+  
+  gStyle->SetOptStat(0);
+  for (int i=0; i<hs.size();i++){
+    hs[i]->Scale(1./hmax);
+    if (i==0){
+      hs[i]->Draw("hist plc");
+    } else {
+      hs[i]->Draw("hist plc same");
+    }
+    float rms = 100 * hs[i]->GetRMS();
+    if (rms < 10) leg->AddEntry(hs[i], Form("%d X0, %.1f%% RMS",int(x0s[i]),rms), "l");
+    else leg->AddEntry(hs[i], Form("%d X0, %.0f%% RMS",int(x0s[i]),rms), "l");
+  }
+  hs[0]->GetXaxis()->SetRangeUser(0,2);
+  hs[0]->GetYaxis()->SetRangeUser(0,1.1);
+  hs[0]->SetTitle(";m_{#mu+#mu-}/m_{S, true} ;events [arbitrary units]");
+  leg->SetFillStyle(0);
+  leg->SetFillColor(0);
+  leg->SetBorderSize(0);
+  leg->Draw();
+          
+  c.SaveAs("plots/scanSrB_hists.pdf");
+    
   // TMP
   f->Close();
   return;
@@ -85,7 +161,7 @@ void fit(){
   TCanvas c("c","");
   
   float s, wid;
-  /* float N = t->GetEntries(); */
+  float N = t->GetEntries();
   for(auto x0 : x0s){
     t->Draw("ms>>h",Form("z<%f",x0));
     sigs.push_back( h->Integral(0,h->GetNbinsX()+2) / N );
@@ -106,7 +182,7 @@ void fit(){
   }
   /* TCanvas c("c",""); */
 
-  g = new TGraph( x0s.size(), &x0s[0], &sigs[0] );
+  TGraph* g = new TGraph( x0s.size(), &x0s[0], &sigs[0] );
   g->Draw("AC*");
   c.SaveAs("plots/sigs.pdf");
   g = new TGraph( x0s.size(), &x0s[0], &wids[0] );

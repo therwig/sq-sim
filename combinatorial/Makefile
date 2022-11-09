@@ -9,9 +9,8 @@ step3:
 
 step4_threeMu: 
 	g++ -o run_step4_threeMu step4_3mu_analysis.cpp `root-config --glibs` `root-config --cflags`
+step4_twoMu: 
+	g++ -o run_step4_twoMu step4_2mu_analysis.cpp `root-config --glibs` `root-config --cflags`
 
-# split1:
-# 	g++ -o run_split1 splitMuons.cpp `root-config --glibs` `root-config --cflags`
-
-split2:
-	g++ -o run_split2 splitMuons.cpp `root-config --glibs` `root-config --cflags`
+split:
+	g++ -o run_split splitMuons.cpp `root-config --glibs` `root-config --cflags`
