@@ -27,6 +27,7 @@ void decayS(TString fname, float mS, int nDecays=1){
   t->Branch("s2x"  ,&s2x  ,"s2x/F"  ); // mu+ (-13) from the scalar
   t->Branch("s2y"  ,&s2y  ,"s2y/F"  );
   t->Branch("s2z"  ,&s2z  ,"s2z/F"  );
+  t->Branch("mS"   ,&mS   ,"mS/F"   );
   // old
   t->Branch("rIz"  ,&rIz, "rIz/F");
   t->Branch("nIz"  ,&nIz, "nIz/F");
@@ -45,7 +46,7 @@ void decayS(TString fname, float mS, int nDecays=1){
   TRandom* r = new TRandom3(2022);
   float phi, cosTheta, sinTheta;
   float mMu=0.105;
-  float pCoM = sqrt(pow(mS,2)-2*pow(mMu,2))/2.;
+  float pCoM = sqrt(pow(mS,2)-4*pow(mMu,2))/2.;
   
   for(long itree=0; itree<it->GetEntries(); itree++){
     it->GetEntry(itree);
@@ -59,6 +60,8 @@ void decayS(TString fname, float mS, int nDecays=1){
       /* s.SetCoordinates(sx, sy, sz, mS); */
       s1.SetXYZM(pCoM*sin(phi)*sinTheta,  pCoM*cos(phi)*sinTheta,  pCoM*cosTheta,  mMu);
       s2.SetXYZM(-pCoM*sin(phi)*sinTheta, -pCoM*cos(phi)*sinTheta, -pCoM*cosTheta, mMu);
+      /* cout << mS << " versus " << (s1+s2).M() << endl; */
+      /* gSystem->Exit(0); */
       s.SetXYZM(sx, sy, sz, mS);
       s1.Boost( s.BoostVector() );
       s2.Boost( s.BoostVector() );

@@ -1,5 +1,5 @@
 TRandom3* r = new TRandom3(2022);
-float s(float x){return r->Gaus(1,.05/3) * x;}
+float s(float x){return r->Gaus(1,.15/3) * x;}
 
 void makeSigFriend(){}
 void makeSigFriend(TString fname){
@@ -9,7 +9,7 @@ void makeSigFriend(TString fname){
   // take the generated particle momenta and translate to "observe-ables"
   //   e.g. momentum-ordered muons without truth labeling
   
-  float rx, ry, rz, s1x, s1y, s1z, s2x, s2y, s2z; // scalar decay products
+  float rx, ry, rz, s1x, s1y, s1z, s2x, s2y, s2z, mS; // scalar decay products
   it->SetBranchAddress("rx",&rx); // recoil mu- (13)
   it->SetBranchAddress("ry",&ry);
   it->SetBranchAddress("rz",&rz);
@@ -19,11 +19,12 @@ void makeSigFriend(TString fname){
   it->SetBranchAddress("s2x",&s2x); // mu+ (-13) from the scalar
   it->SetBranchAddress("s2y",&s2y);
   it->SetBranchAddress("s2z",&s2z);
+  it->SetBranchAddress("mS",&mS);
   
   TFile* fo = new TFile(fname.ReplaceAll(".root","")+"_Friend.root","recreate");
   TTree* t = new TTree("Friends","");
   float Mx, My, Mz, m1x, m1y, m1z, m2x, m2y, m2z;
-  float mass1, mass2;
+  float mass1, mass2, massBest;
   float dot1, dot2; //, p1, p2, P;
   float dr1, dr2, drr1, drr2; //, p1, p2, P;
   float pair1x, pair1y, pair1z, pair1p, pair2x, pair2y, pair2z, pair2p;
@@ -37,6 +38,7 @@ void makeSigFriend(TString fname){
   t->Branch("m2x"  ,&m2x  ,"m2x/F"  ); // mu- (13) with sub-leading pz
   t->Branch("m2y"  ,&m2y  ,"m2y/F"  );
   t->Branch("m2z"  ,&m2z  ,"m2z/F"  );
+  t->Branch("massBest"  ,&massBest  ,"massBest/F"  );
   t->Branch("mass1"  ,&mass1  ,"mass1/F"  );
   t->Branch("mass2"  ,&mass2  ,"mass2/F"  );
   t->Branch("dot1"  ,&dot1  ,"dot1/F");
@@ -60,7 +62,7 @@ void makeSigFriend(TString fname){
 
   float s_Mx, s_My, s_Mz;
   float s_m1x, s_m1y, s_m1z, s_m2x, s_m2y, s_m2z;
-  float s_mass1, s_mass2;
+  float s_mass1, s_mass2, s_massBest;
   float s_dot1, s_dot2;
   float s_dr1, s_dr2, s_drr1, s_drr2;
   float s_pair1x, s_pair1y, s_pair1z, s_pair1p, s_pair2x, s_pair2y, s_pair2z, s_pair2p;
@@ -74,6 +76,7 @@ void makeSigFriend(TString fname){
   t->Branch("s_Mx"  ,&s_Mx  ,"s_Mx/F"  );
   t->Branch("s_My"  ,&s_My  ,"s_My/F"  );
   t->Branch("s_Mz"  ,&s_Mz  ,"s_Mz/F"  );
+  t->Branch("s_massBest"  ,&s_massBest  ,"s_massBest/F"  );
   t->Branch("s_mass1"  ,&s_mass1  ,"s_mass1/F");
   t->Branch("s_mass2"  ,&s_mass2  ,"s_mass2/F");
   t->Branch("s_dot1"  ,&s_dot1  ,"s_dot1/F");
@@ -136,6 +139,8 @@ void makeSigFriend(TString fname){
     pair2p = (m2V+MV).P();
     pair2z1fracP = max(m2V.P(),MV.P())/(m2V+MV).P();
     pair2z1fracPz = max(m2V.Pz(),MV.Pz())/(m2V+MV).P();
+    massBest = mass1;
+    if (abs(mass1-mS) > abs(mass2-mS)) massBest = mass2;
     dot1 = m1V.Dot(MV);
     dot2 = m2V.Dot(MV);
     dr1 = m1V.DrEtaPhi(MV);
@@ -170,6 +175,8 @@ void makeSigFriend(TString fname){
     s_pair2p = (m2V+MV).P();
     s_pair2z1fracP = max(m2V.P(),MV.P())/(m2V+MV).P();
     s_pair2z1fracPz = max(m2V.Pz(),MV.Pz())/(m2V+MV).P();
+    s_massBest = s_mass1;
+    if (abs(s_mass1-mS) > abs(s_mass2-mS)) s_massBest = mass2;
     s_dot1 = m1V.Dot(MV);
     s_dot2 = m2V.Dot(MV);
     s_dr1 = m1V.DrEtaPhi(MV);

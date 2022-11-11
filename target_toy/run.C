@@ -83,8 +83,9 @@ void fitSimple(){
     auto p = FindMinSRB(h, x0);
     srbs.push_back( p.first );
     wids.push_back( p.second );
+    cout << p.second << " " << p.first << endl;
     srbVecs.push_back( GetAllSRB(h, x0) );
-    hs.push_back((TH1*) h->Clone(Form("h_%f",x0)));
+    hs.push_back((TH1*) h->Clone(Form("h_%d",int(x0))));
     if( h->GetMaximum() > hmax) hmax = h->GetMaximum();
   }
   TGraph* g = new TGraph( x0s.size(), &x0s[0], &srbs[0] );
@@ -106,7 +107,8 @@ void fitSimple(){
     binsWids.resize(NN);
     gs.push_back( new TGraph( NN, &binsWids[0], &srbVec[0] ) );
     /* gs.back().SetLineColor(colz[gs.size()-1]); */
-    mg->Add(gs.back());
+    gs.back()->SetName(Form("%d",int(x0s[gs.size()-1])));
+    mg->Add((TGraph*)gs.back()->Clone());
   }
   mg->Draw("AC PLC");
   mg->SetTitle(";m_{#mu+#mu-} window [%];S/#sqrt{B}");
@@ -144,6 +146,15 @@ void fitSimple(){
   leg->Draw();
           
   c.SaveAs("plots/scanSrB_hists.pdf");
+
+  TFile* fo = new TFile("histdump.root","recreate");
+  for (int i=0; i<hs.size();i++){
+    hs[i]->SetDirectory(fo);
+    hs[i]->Write();
+  }
+  for (auto g : gs){
+    g->Write();
+  }
     
   // TMP
   f->Close();

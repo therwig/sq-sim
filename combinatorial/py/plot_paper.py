@@ -11,18 +11,26 @@ pdir='plots/paper/'
 h = HistHelper()
 
 make_pz_comp = 0
-make_dx_comp = 0
+make_dx_comp = 1
 make_mass = 0
-make_mass2 = 1
+make_mass2 = 0
 
-def dumpToTxt(fname, h):
+def dumpToTxt(fname, h, lims=None):
     f = open(fname+'.txt','w')
     for i in range(1,h.GetNbinsX()+1):
         x = h.GetBinCenter(i)
         y = h.GetBinContent(i)
+        if lims and (x<lims[0] or x>lims[1]): continue
         f.write('{} {}\n'.format(x,y))
     f.close()
-
+def dumpToTxtG(fname, g):
+    f = open(fname+'.txt','w')
+    for i in range(g.GetN()):
+        x = g.GetX()[i]
+        y = g.GetY()[i]
+        f.write('{} {}\n'.format(x,y))
+    f.close()
+    
 if make_pz_comp:
     f = ROOT.TFile('data/final_muons_noSkim.root','read')
     t = f.Get('Events')
@@ -74,33 +82,33 @@ if make_dx_comp:
     t = f.Get('Events')
     
     h.book('dx_pos',';muon x_{end of dump} [cm];a.u.',50,-50,50)
-    h.book('dx_pos10',';muon x_{end of dump} [cm];a.u.',50,-50,50)
+    h.book('dx_pos20',';muon x_{end of dump} [cm];a.u.',50,-50,50)
     h.book('dx_neg',';muon x_{end of dump} [cm];a.u.',50,-50,50)
-    h.book('dx_neg10',';muon x_{end of dump} [cm];a.u.',50,-50,50)
+    h.book('dx_neg20',';muon x_{end of dump} [cm];a.u.',50,-50,50)
     
     t.Draw("x>>dx_pos","pz>0 && pdg==-13")
-    t.Draw("x>>dx_pos10","pz>10 && pdg==-13")
+    t.Draw("x>>dx_pos20","pz>20 && pdg==-13")
     t.Draw("x>>dx_neg","pz>0 && pdg==13")
-    t.Draw("x>>dx_neg10","pz>10 && pdg==13")
+    t.Draw("x>>dx_neg20","pz>20 && pdg==13")
     nall = h['dx_pos'].Integral() + h['dx_neg'].Integral()
-    hs = [h['dx_pos'], h['dx_pos10'], h['dx_neg'], h['dx_neg10']]
+    hs = [h['dx_pos'], h['dx_pos20'], h['dx_neg'], h['dx_neg20']]
     # for h in hs: h.Scale(h.Integral()/nall)
     
     plot('dx_comparison', hs,
-         labs = ['all final #mu+','final #mu+ with p_{z}>10 GeV','all final #mu-','final #mu- with p_{z}>10 GeV'],
+         labs = ['all final #mu+','final #mu+ with p_{z}>20 GeV','all final #mu-','final #mu- with p_{z}>20 GeV'],
          colz=[ROOT.kGray, ROOT.kBlack, ROOT.kRed-9, ROOT.kRed],
          pdir=pdir, rescale=1./nall, legcoors=(0.15,0.63,0.48,0.88), #xlims=(0,35),
          ytitle='d#sigma/dx', dopt='', legstyle='l')
     plot('dx_comparison_log', hs,
-         labs = ['all final #mu+','final #mu+ with p_{z}>10 GeV','all final #mu-','final #mu- with p_{z}>10 GeV'],
+         labs = ['all final #mu+','final #mu+ with p_{z}>20 GeV','all final #mu-','final #mu- with p_{z}>20 GeV'],
          colz=[ROOT.kGray, ROOT.kBlack, ROOT.kRed-9, ROOT.kRed],
          pdir=pdir, rescale=1., legcoors=(0.15,0.33,0.48,0.58), #xlims=(0,35),
          ytitle='d#sigma/dx', dopt='', legstyle='l', logy=1, ymin=2e-6)
 
     dumpToTxt(pdir+'/txt/dx_positive', hs[0])
-    dumpToTxt(pdir+'/txt/dx_positive10GeV', hs[1])
+    dumpToTxt(pdir+'/txt/dx_positive20GeV', hs[1])
     dumpToTxt(pdir+'/txt/dx_negative', hs[2])
-    dumpToTxt(pdir+'/txt/dx_negative10GeV', hs[3])
+    dumpToTxt(pdir+'/txt/dx_negative20GeV', hs[3])
     
     f.Close()
 

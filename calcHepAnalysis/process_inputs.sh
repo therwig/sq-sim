@@ -6,7 +6,7 @@ E=20
 # done
 
 #python3 scripts/convert_calcHEP2root.py data/${E}GeVBeamBg.txt > /dev/null 2>&1
-#rt scripts/makeBkgFriend.C
+rt scripts/makeBkgFriend.C
 
 # nDecays=10
 # rt scripts/decayS.C\(\"data/${E}GeVBeam/mS900MeV${E}.root\",0.900,$nDecays\);
@@ -22,7 +22,7 @@ E=20
 # rt scripts/decayS.C\(\"data/${E}GeVBeam/mS3000MeV${E}.root\",3,$nDecays\);
 # rt scripts/decayS.C\(\"data/${E}GeVBeam/mS4000MeV${E}.root\",4,$nDecays\);
 
-#for f in data/${E}GeVBeam/mS4000MeV${E}*_decayed.root;
+# for f in data/${E}GeVBeam/mS4000MeV${E}*_decayed.root;
 for f in data/${E}GeVBeam/*_decayed.root;
 do
     rt scripts/makeSigFriend.C\(\"$f\"\);

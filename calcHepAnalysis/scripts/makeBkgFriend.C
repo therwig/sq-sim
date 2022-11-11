@@ -3,7 +3,7 @@
 /* void makeFriend(){} */
 /* void makeFriend(TString fname){ */
 TRandom3* r = new TRandom3(2022);
-float s(float x){return r->Gaus(1,.05/3) * x;}
+float s(float x){return r->Gaus(1,.15/3) * x;}
 void makeBkgFriend(){
   TString eBeam = "20";
   TFile* f = new TFile("data/"+eBeam+"GeVBeamBg.root","r");
@@ -35,7 +35,7 @@ void makeBkgFriend(){
   /* TFile* fo = new TFile(fname.ReplaceAll(".root","")+"_Friend.root","recreate"); */
   TTree* t = new TTree("Friends","");
   float m1x, m1y, m1z, m2x, m2y, m2z;
-  float mass1, mass2; //, p1, p2, P;
+  float mass1, mass2, massBest; //, p1, p2, P;
   float dot1, dot2; //, p1, p2, P;
   float dr1, dr2, drr1, drr2; //, p1, p2, P;
   float pair1x, pair1y, pair1z, pair1p, pair2x, pair2y, pair2z, pair2p;
@@ -46,6 +46,7 @@ void makeBkgFriend(){
   t->Branch("m2x"  ,&m2x  ,"m2x/F"  );
   t->Branch("m2y"  ,&m2y  ,"m2y/F"  );
   t->Branch("m2z"  ,&m2z  ,"m2z/F"  );
+  t->Branch("massBest"  ,&massBest  ,"massBest/F"  );
   t->Branch("mass1"  ,&mass1  ,"mass1/F");
   t->Branch("mass2"  ,&mass2  ,"mass2/F");
   t->Branch("dot1"  ,&dot1  ,"dot1/F");
@@ -71,7 +72,7 @@ void makeBkgFriend(){
   /* t->Branch("P"   ,&P   ,"P/F"  ); */
   float s_Mx, s_My, s_Mz;
   float s_m1x, s_m1y, s_m1z, s_m2x, s_m2y, s_m2z;
-  float s_mass1, s_mass2;
+  float s_mass1, s_mass2, s_massBest;
   float s_dot1, s_dot2;
   float s_dr1, s_dr2, s_drr1, s_drr2;
   float s_pair1x, s_pair1y, s_pair1z, s_pair1p, s_pair2x, s_pair2y, s_pair2z, s_pair2p;
@@ -85,6 +86,7 @@ void makeBkgFriend(){
   t->Branch("s_Mx"  ,&s_Mx  ,"s_Mx/F"  );
   t->Branch("s_My"  ,&s_My  ,"s_My/F"  );
   t->Branch("s_Mz"  ,&s_Mz  ,"s_Mz/F"  );
+  t->Branch("s_massBest"  ,&s_massBest  ,"s_massBest/F"  );
   t->Branch("s_mass1"  ,&s_mass1  ,"s_mass1/F");
   t->Branch("s_mass2"  ,&s_mass2  ,"s_mass2/F");
   t->Branch("s_dot1"  ,&s_dot1  ,"s_dot1/F");
@@ -130,6 +132,7 @@ void makeBkgFriend(){
     MV.SetXYZM(Mx, My, Mz, mMu);
     
     mass1 = (m1V+MV).M();
+    massBest = mass1;
     pair1x = (m1V+MV).Px();
     pair1y = (m1V+MV).Py();
     pair1z = (m1V+MV).Pz();
@@ -164,6 +167,7 @@ void makeBkgFriend(){
     MV.SetXYZM (s_Mx,  s_My,  s_Mz, mMu);
     
     s_mass1 = (m1V+MV).M();
+    s_massBest = s_mass1;
     s_pair1x = (m1V+MV).Px();
     s_pair1y = (m1V+MV).Py();
     s_pair1z = (m1V+MV).Pz();

@@ -1,3 +1,4 @@
-.csv
-.root
-.pdf
+*~
+*.csv
+*.root
+*.pdf
